@@ -1,0 +1,86 @@
+name: Deploy vote H5
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+env:
+  SERVER_HOST: ${{ secrets.SERVER_HOST || '101.42.94.41' }}
+  SERVER_USER: ${{ secrets.SERVER_USER || 'root' }}
+  WEB_DIR: /opt/wk-vote/www/vote
+  DOMAIN: wk.oksja.cn
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build
+        env:
+          VITE_API_BASE_URL: /api
+        run: |
+          npm install
+          npm run build:h5
+
+      - name: Upload dist
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: dist/build/h5/*
+          target: ${{ env.WEB_DIR }}/releases/${{ github.sha }}
+          strip_components: 3
+
+      - name: Activate release and nginx
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            set -e
+            WEB_DIR="${{ env.WEB_DIR }}"
+            DOMAIN="${{ env.DOMAIN }}"
+
+            mkdir -p "$WEB_DIR/releases"
+            ln -sfn "$WEB_DIR/releases/${{ github.sha }}" "$WEB_DIR/current"
+
+            if command -v nginx >/dev/null 2>&1; then
+              cat > "/etc/nginx/conf.d/wk.oksja.cn.conf" <<EOF
+            server {
+                listen 80;
+                server_name ${DOMAIN};
+
+                root ${WEB_DIR}/current;
+                index index.html;
+
+                location / {
+                    try_files \$uri \$uri/ /index.html;
+                }
+
+                location /api/ {
+                    proxy_set_header Host \$host;
+                    proxy_set_header X-Real-IP \$remote_addr;
+                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto \$scheme;
+                    proxy_pass http://127.0.0.1:8080/;
+                }
+            }
+            EOF
+              nginx -t
+              systemctl reload nginx || systemctl restart nginx
+            else
+              echo "nginx is not installed, skipped nginx config"
+            fi

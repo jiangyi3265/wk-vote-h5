@@ -24,7 +24,7 @@
 
 			<!-- 维度图例 -->
 			<view class="legend">
-				<text class="legend-tip">点选「候选人 + 维度」即可投票，每张票=一个赞</text>
+				<text class="legend-tip">每个项目只能选择 1 位候选人，点同项目其他人会自动改选</text>
 			</view>
 
 			<!-- 候选人列表 -->
@@ -95,7 +95,8 @@
 				return this.selected.length
 			},
 			max() {
-				return this.activity.votesPerPerson || 8
+				const voteLimit = this.activity.votesPerPerson || 8
+				return this.options.length ? Math.min(voteLimit, this.options.length) : voteLimit
 			},
 			requireName() {
 				return this.activity.requireName === '1'
@@ -127,12 +128,20 @@
 			candVotes(cid) {
 				return this.selected.filter(k => k.indexOf(cid + '_') === 0).length
 			},
+			optionIndex(oid) {
+				return this.selected.findIndex(k => Number(k.split('_')[1]) === Number(oid))
+			},
 			toggle(cid, oid) {
 				const k = this.key(cid, oid)
 				const i = this.selected.indexOf(k)
 				if (i > -1) {
 					this.selected.splice(i, 1)
 				} else {
+					const oi = this.optionIndex(oid)
+					if (oi > -1) {
+						this.selected.splice(oi, 1, k)
+						return
+					}
 					if (this.used >= this.max) {
 						uni.showToast({ title: '票数已用完（' + this.max + '票）', icon: 'none' })
 						return
@@ -163,6 +172,11 @@
 					const p = k.split('_')
 					return { candidateId: Number(p[0]), optionId: Number(p[1]) }
 				})
+				const optionIds = ballots.map(b => b.optionId)
+				if (new Set(optionIds).size !== optionIds.length) {
+					uni.showToast({ title: '每个项目只能选择 1 位候选人', icon: 'none' })
+					return
+				}
 				this.submitting = true
 				submitVote({
 					activityId: Number(this.activityId),

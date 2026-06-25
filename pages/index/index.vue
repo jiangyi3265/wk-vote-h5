@@ -4,7 +4,7 @@
 		<view class="hero">
 			<view class="hero-emoji">🏆</view>
 			<view class="hero-title">校园之星 · 评选投票</view>
-			<view class="hero-sub">每人 N 张点赞票，把票投给最闪耀的 TA</view>
+			<view class="hero-sub">8 个选项选 1 个，把票投给最认可的 TA</view>
 		</view>
 
 		<view class="body">
@@ -33,8 +33,8 @@
 					<view class="card-desc">{{ a.description }}</view>
 					<view class="card-meta">
 						<view class="meta-item">
-							<text class="meta-num">{{ a.votesPerPerson }}</text>
-							<text class="meta-label">每人票数</text>
+							<text class="meta-num">8选1</text>
+							<text class="meta-label">投票规则</text>
 						</view>
 						<view class="meta-divider"></view>
 						<view class="meta-item">

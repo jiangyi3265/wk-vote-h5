@@ -24,7 +24,7 @@
 
 			<!-- 维度图例 -->
 			<view class="legend">
-				<text class="legend-tip">8 个选项只能选 1 个，点其他选项会自动改选</text>
+				<text class="legend-tip">每张票选一种类型，8 张票需投给 8 位不同候选人</text>
 			</view>
 
 			<!-- 候选人列表 -->
@@ -64,7 +64,7 @@
 					<text class="sb-num">{{ used }}</text>
 					<text class="sb-unit">/ {{ max }} 票</text>
 				</view>
-				<button class="sb-btn" :disabled="used === 0 || submitting" @click="submit">
+				<button class="sb-btn" :disabled="used !== max || submitting" @click="submit">
 					{{ submitting ? '提交中…' : '提交投票' }}
 				</button>
 			</view>
@@ -95,7 +95,10 @@
 				return this.selected.length
 			},
 			max() {
-				return 1
+				const voteLimit = Number(this.activity.votesPerPerson) || 8
+				const candidateCount = this.candidates.length || voteLimit
+				const optionCount = this.options.length || voteLimit
+				return Math.min(voteLimit, candidateCount, optionCount)
 			},
 			requireName() {
 				return this.activity.requireName === '1'
@@ -121,11 +124,17 @@
 			key(cid, oid) {
 				return cid + '_' + oid
 			},
+			candidateOf(k) {
+				return Number(String(k).split('_')[0])
+			},
+			optionOf(k) {
+				return Number(String(k).split('_')[1])
+			},
 			isSel(cid, oid) {
 				return this.selected.indexOf(this.key(cid, oid)) > -1
 			},
 			candVotes(cid) {
-				return this.selected.filter(k => k.indexOf(cid + '_') === 0).length
+				return this.selected.filter(k => this.candidateOf(k) === Number(cid)).length
 			},
 			toggle(cid, oid) {
 				const k = this.key(cid, oid)
@@ -133,7 +142,15 @@
 				if (i > -1) {
 					this.selected.splice(i, 1)
 				} else {
-					this.selected = [k]
+					const next = this.selected.filter(item => {
+						return this.candidateOf(item) !== Number(cid) && this.optionOf(item) !== Number(oid)
+					})
+					if (next.length >= this.max) {
+						uni.showToast({ title: '8 张票已选满', icon: 'none' })
+						return
+					}
+					next.push(k)
+					this.selected = next
 				}
 			},
 			shortName(name) {
@@ -150,7 +167,10 @@
 				return ''
 			},
 			submit() {
-				if (this.used === 0) return
+				if (this.used !== this.max) {
+					uni.showToast({ title: '请投满 ' + this.max + ' 张票', icon: 'none' })
+					return
+				}
 				if (this.requireName && !this.voterName.trim()) {
 					uni.showToast({ title: '请先填写你的名字', icon: 'none' })
 					return
@@ -159,8 +179,12 @@
 					const p = k.split('_')
 					return { candidateId: Number(p[0]), optionId: Number(p[1]) }
 				})
-				if (ballots.length !== 1) {
-					uni.showToast({ title: '8 个选项只能选 1 个', icon: 'none' })
+				if (new Set(ballots.map(b => b.optionId)).size !== ballots.length) {
+					uni.showToast({ title: '每种类型只能投一次', icon: 'none' })
+					return
+				}
+				if (new Set(ballots.map(b => b.candidateId)).size !== ballots.length) {
+					uni.showToast({ title: '8 张票必须投给 8 个不同的人', icon: 'none' })
 					return
 				}
 				this.submitting = true

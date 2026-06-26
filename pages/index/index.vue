@@ -133,8 +133,8 @@
 	}
 
 	.body {
-		padding: 30rpx;
-		margin-top: -40rpx;
+		padding: 34rpx 30rpx 30rpx;
+		margin-top: 0;
 	}
 
 	.section-title {

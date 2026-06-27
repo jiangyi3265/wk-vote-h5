@@ -1,7 +1,7 @@
 {
   "name": "vote-uniapp-h5",
   "version": "1.0.0",
-  "description": "校园之星投票 uni-app 前端",
+  "description": "以“情”连线，点赞身边人投票 uni-app 前端",
   "scripts": {
     "dev:h5": "cross-env UNI_INPUT_DIR=. uni",
     "build:h5": "cross-env UNI_INPUT_DIR=. uni build"

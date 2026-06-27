@@ -1,7 +1,7 @@
 <script>
 	export default {
 		onLaunch: function() {
-			console.log('校园之星投票系统启动')
+			console.log('以“情”连线，点赞身边人投票系统启动')
 		},
 		onShow: function() {},
 		onHide: function() {}

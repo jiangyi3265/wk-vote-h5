@@ -3,7 +3,7 @@
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "校园之星 · 评选投票",
+				"navigationBarTitleText": "以“情”连线，点赞身边人",
 				"navigationBarBackgroundColor": "#6a5acd",
 				"navigationBarTextStyle": "white",
 				"enablePullDownRefresh": true
@@ -29,7 +29,7 @@
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "white",
-		"navigationBarTitleText": "校园之星",
+		"navigationBarTitleText": "以“情”连线，点赞身边人",
 		"navigationBarBackgroundColor": "#6a5acd",
 		"backgroundColor": "#f3f1fb"
 	},

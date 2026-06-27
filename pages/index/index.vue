@@ -3,7 +3,7 @@
 		<!-- 顶部横幅 -->
 		<view class="hero">
 			<view class="hero-emoji">🏆</view>
-			<view class="hero-title">校园之星 · 评选投票</view>
+			<view class="hero-title">以“情”连线，点赞身边人</view>
 			<view class="hero-sub">每人 8 张票，投给 8 位不同候选人</view>
 		</view>
 
